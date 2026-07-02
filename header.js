@@ -10,6 +10,22 @@
     window.location.href
   );
   const fromHeader = (path) => new URL(path, headerScriptUrl).href;
+  const faviconUrl = fromHeader("assets/avatar.jpg");
+
+  function mountFavicon() {
+    const existingIcon = document.head.querySelector('link[rel~="icon"]');
+    const icon = existingIcon || document.createElement("link");
+
+    icon.rel = "icon";
+    icon.type = "image/jpeg";
+    icon.href = faviconUrl;
+
+    if (!existingIcon) {
+      document.head.append(icon);
+    }
+  }
+
+  mountFavicon();
 
   const template = document.createElement("template");
   template.innerHTML = `
