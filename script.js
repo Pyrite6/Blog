@@ -3,37 +3,11 @@ const scriptUrl = new URL(
   document.currentScript?.getAttribute("src") || "script.js",
   window.location.href
 );
-const toggle = document.querySelector(".theme-toggle");
-const navLinks = document.querySelectorAll("[data-nav]");
 
 const savedTheme = window.localStorage.getItem("blog-theme");
 if (savedTheme === "dark") {
   root.dataset.theme = "dark";
 }
-
-toggle?.addEventListener("click", () => {
-  const isDark = root.dataset.theme === "dark";
-
-  if (isDark) {
-    delete root.dataset.theme;
-    window.localStorage.setItem("blog-theme", "light");
-    return;
-  }
-
-  root.dataset.theme = "dark";
-  window.localStorage.setItem("blog-theme", "dark");
-});
-
-const currentPage = root.dataset.page === "article" ? "home" : root.dataset.page;
-navLinks.forEach((link) => {
-  const isActive = link.dataset.nav === currentPage;
-  link.classList.toggle("is-active", isActive);
-  if (isActive) {
-    link.setAttribute("aria-current", "page");
-  } else {
-    link.removeAttribute("aria-current");
-  }
-});
 
 function loadDataScript(relativePath, globalName, isValid) {
   const validator = isValid || (() => true);
@@ -76,6 +50,19 @@ function loadCategories() {
   );
 }
 
+function loadSharedHeader() {
+  return new Promise((resolve, reject) => {
+    const headerScript = document.createElement("script");
+    headerScript.src = new URL("header.js", scriptUrl).href;
+    headerScript.async = false;
+    headerScript.onload = resolve;
+    headerScript.onerror = () => {
+      reject(new Error("Failed to load shared header."));
+    };
+    document.head.append(headerScript);
+  });
+}
+
 function loadSharedFooter() {
   return new Promise((resolve, reject) => {
     const footerScript = document.createElement("script");
@@ -86,6 +73,36 @@ function loadSharedFooter() {
       reject(new Error("Failed to load shared footer."));
     };
     document.head.append(footerScript);
+  });
+}
+
+function initSharedHeader() {
+  const toggle = document.querySelector(".theme-toggle");
+  const navLinks = document.querySelectorAll("[data-nav]");
+
+  toggle?.addEventListener("click", () => {
+    const isDark = root.dataset.theme === "dark";
+
+    if (isDark) {
+      delete root.dataset.theme;
+      window.localStorage.setItem("blog-theme", "light");
+      return;
+    }
+
+    root.dataset.theme = "dark";
+    window.localStorage.setItem("blog-theme", "dark");
+  });
+
+  const currentPage =
+    root.dataset.page === "article" ? "home" : root.dataset.page;
+  navLinks.forEach((link) => {
+    const isActive = link.dataset.nav === currentPage;
+    link.classList.toggle("is-active", isActive);
+    if (isActive) {
+      link.setAttribute("aria-current", "page");
+    } else {
+      link.removeAttribute("aria-current");
+    }
   });
 }
 
@@ -456,6 +473,13 @@ function mountHomeFilters(posts, categories) {
 
   refresh();
 }
+
+loadSharedHeader()
+  .then(initSharedHeader)
+  .catch((error) => {
+    console.error(error);
+    initSharedHeader();
+  });
 
 loadSharedFooter().catch((error) => {
   console.error(error);
