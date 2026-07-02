@@ -114,6 +114,7 @@ body[data-theme="dark"] .site-header {
   display: inline-flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
   color: var(--text);
   text-decoration: none;
 }
@@ -125,12 +126,17 @@ body[data-theme="dark"] .site-header {
 }
 
 .brand-avatar {
+  display: block;
+  flex: 0 0 32px;
+  box-sizing: border-box;
   width: 32px;
   height: 32px;
+  max-width: 32px;
+  max-height: 32px;
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 10px 24px rgba(17, 37, 62, 0.12);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.56);
 }
 
 .brand-text {
