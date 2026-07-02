@@ -17,7 +17,9 @@ function loadDataScript(relativePath, globalName, isValid) {
 
   return new Promise((resolve, reject) => {
     const dataScript = document.createElement("script");
-    dataScript.src = new URL(relativePath, scriptUrl).href;
+    const dataUrl = new URL(relativePath, scriptUrl);
+    dataUrl.searchParams.set("v", Date.now().toString());
+    dataScript.src = dataUrl.href;
     dataScript.async = false;
     dataScript.onload = () => {
       const data = window[globalName];

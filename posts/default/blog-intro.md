@@ -5,7 +5,7 @@ categoryOrder: 1
 date: 2026-02-06
 tags:
   - 核心页面
-cover: assets/cover-about.jpg
+cover: assets/cover-notes.jpg
 featured: true
 pinned: true
 showInRecent: true

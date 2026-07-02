@@ -18,7 +18,7 @@ window.__BLOG_ARTICLE__ = {
   "wordCountValue": 190,
   "featured": true,
   "pinned": true,
-  "cover": "assets/cover-about.jpg",
+  "cover": "assets/cover-notes.jpg",
   "path": "article.html?category=default&slug=blog-intro",
   "sourcePath": "posts/default/blog-intro.md",
   "sourceDir": "posts/default",

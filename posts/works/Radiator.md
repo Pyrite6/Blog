@@ -6,7 +6,7 @@ date: 2026-02-06
 tags:
   - 散热器
   - LabVIEW
-cover: assets/cover-about.jpg
+cover: assets/cover-work.jpg
 featured: true
 showInRecent: true
 recentOrder: 2
