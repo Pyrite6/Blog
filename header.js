@@ -10,7 +10,7 @@
     window.location.href
   );
   const fromHeader = (path) => new URL(path, headerScriptUrl).href;
-  const faviconUrl = fromHeader("assets/avatar.jpg");
+  const faviconUrl = fromHeader("blog.ico");
 
   function mountFavicon() {
     const existingIcon = document.head.querySelector('link[rel~="icon"]');
