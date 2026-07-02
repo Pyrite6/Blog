@@ -115,6 +115,7 @@ body[data-theme="dark"] .site-header {
   align-items: center;
   gap: 12px;
   min-width: 0;
+  padding-left: 16px;
   color: var(--text);
   text-decoration: none;
 }
