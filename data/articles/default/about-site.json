@@ -1,0 +1,32 @@
+{
+  "id": "about-site",
+  "title": "关于我与本站。",
+  "excerpt": "也许应该写在“关于我”部分，但我更想把它放在首页：这里会记录阅读、学习与生活留下的轻微回声。",
+  "summary": "也许应该写在“关于我”部分，但我更想把它放在首页：这里会记录阅读、学习与生活留下的轻微回声。",
+  "description": "也许应该写在“关于我”部分，但我更想把它放在首页：这里会记录阅读、学习与生活留下的轻微回声。",
+  "category": "闲谈",
+  "categoryOrder": 1,
+  "folder": "default",
+  "date": "2026-02-08",
+  "dateLabel": "2026-02-08",
+  "tags": [
+    "首页随笔",
+    "站点说明"
+  ],
+  "readingTime": "2 分钟",
+  "readingMinutes": 2,
+  "wordCount": "415 字",
+  "wordCountValue": 415,
+  "featured": true,
+  "pinned": false,
+  "cover": "assets/cover-about.jpg",
+  "path": "article.html?category=default&slug=about-site",
+  "sourcePath": "posts/default/about-site.md",
+  "sourceDir": "posts/default",
+  "imageDir": "image/default/about-site",
+  "showInRecent": true,
+  "recentOrder": 1,
+  "showInArchive": true,
+  "archiveOrder": 2,
+  "content": "也许应该写在“关于我”部分，但我更想把它放在首页。对我来说，博客不只是一个陈列结论的地方，更像是一张长期摊开的书桌，允许阅读、学习与生活留下轻微却真实的回声。\n\n## 这里会记录什么\n\n- 阅读后的批注与回望\n- 做项目时留下的思路与踩坑\n- 一些不适合发成长文、但值得被记住的瞬间\n\n很多内容未必成熟，甚至可能带着阶段性的偏见。但正因为它们处在形成过程中，才更值得被认真存放。\n\n## 为什么改成 Markdown\n\n以前每一篇文章都要维护单独的 HTML 页面，改一次结构就要重复处理很多模板细节。现在把文章源改成 Markdown 之后，编辑会更轻一些：\n\n1. 文章正文只需要专注内容本身。\n2. 首页归档和文章详情使用同一份元数据。\n3. 后续想新增文章，只需要在 `posts/default/` 下面直接新增一个 `.md` 文件。\n4. 如果文章里要插图，就把图片放到 `image/default/about-site/` 下面，在 Markdown 中直接写相对路径即可。\n\n如果你是从首页点进来的，也可以顺手看看这篇 [博客｜序（新）](blog-intro.md)。"
+}

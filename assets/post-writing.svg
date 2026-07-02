@@ -1,0 +1,43 @@
+<svg width="800" height="560" viewBox="0 0 800 560" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="560" fill="#F2ECE8"/>
+  <rect x="0" y="0" width="800" height="560" fill="url(#paint0_radial)"/>
+  <path d="M0 366H800" stroke="#8C715B" stroke-width="6"/>
+  <rect x="0" y="0" width="800" height="560" stroke="#E6DDD6" stroke-width="10"/>
+  <path d="M40 60V312" stroke="#D2C4B6" stroke-width="12"/>
+  <path d="M110 48V300" stroke="#D2C4B6" stroke-width="10"/>
+  <path d="M690 38V318" stroke="#D2C4B6" stroke-width="12"/>
+  <path d="M760 56V306" stroke="#D2C4B6" stroke-width="10"/>
+  <path d="M55 116H153" stroke="#D2C4B6" stroke-width="10"/>
+  <path d="M642 108H780" stroke="#D2C4B6" stroke-width="10"/>
+  <path d="M84 172H145" stroke="#D2C4B6" stroke-width="10"/>
+  <path d="M664 168H770" stroke="#D2C4B6" stroke-width="10"/>
+  <path d="M55 230H153" stroke="#D2C4B6" stroke-width="10"/>
+  <path d="M640 226H780" stroke="#D2C4B6" stroke-width="10"/>
+  <ellipse cx="411" cy="510" rx="242" ry="48" fill="#A77E5A"/>
+  <path d="M278 143C314 91 392 77 452 105C513 133 550 196 552 259C554 318 528 371 483 402C436 433 370 442 317 417C268 393 238 344 240 287C242 227 249 186 278 143Z" fill="#8E6B7E"/>
+  <path d="M294 167C326 123 389 114 439 136C490 158 517 213 514 262C511 304 490 339 450 367C409 395 354 400 320 376C289 354 273 321 273 281C273 236 274 196 294 167Z" fill="#CDA6B3"/>
+  <path d="M338 190C357 166 393 157 422 166C452 175 474 201 479 230C485 259 476 288 456 308C437 327 408 338 378 336C348 334 324 317 313 291C300 261 315 220 338 190Z" fill="#F3D7D3"/>
+  <path d="M349 237C355 225 366 218 378 218C391 218 401 225 407 236C413 249 410 265 400 274C389 284 372 286 359 278C346 270 342 251 349 237Z" fill="#EBC0B8"/>
+  <path d="M372 211C381 205 393 205 402 209" stroke="#674A5A" stroke-width="4" stroke-linecap="round"/>
+  <path d="M426 214C435 209 448 209 456 214" stroke="#674A5A" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="391" cy="233" r="8" fill="#674A5A"/>
+  <circle cx="441" cy="236" r="8" fill="#674A5A"/>
+  <path d="M409 271C418 276 431 276 440 271" stroke="#B17371" stroke-width="4" stroke-linecap="round"/>
+  <path d="M341 160C371 132 413 121 454 130C490 138 518 166 533 198L539 162C523 126 482 101 442 100C402 99 361 119 334 145L341 160Z" fill="#DAB8C4"/>
+  <path d="M292 290L246 354C237 367 232 386 234 402L242 473H292L329 341L292 290Z" fill="#E3D7CA"/>
+  <path d="M504 289L555 348C566 360 573 377 575 393L580 468H525L474 332L504 289Z" fill="#E6DCD4"/>
+  <path d="M314 298L352 458H507L480 314L314 298Z" fill="#F8F6F1" stroke="#8A6B7B" stroke-width="4"/>
+  <path d="M346 322H474" stroke="#B6B1AB" stroke-width="4"/>
+  <path d="M338 352H487" stroke="#C6C1BC" stroke-width="4"/>
+  <path d="M355 382H476" stroke="#C6C1BC" stroke-width="4"/>
+  <path d="M364 411H472" stroke="#C6C1BC" stroke-width="4"/>
+  <path d="M304 296C311 278 326 263 346 254" stroke="#8A6B7B" stroke-width="4" stroke-linecap="round"/>
+  <path d="M489 316L554 412" stroke="#8A6B7B" stroke-width="4" stroke-linecap="round"/>
+  <path d="M328 414L377 476H557L516 414H328Z" fill="#EAE1D8"/>
+  <defs>
+    <radialGradient id="paint0_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(390 82) rotate(90) scale(530 657)">
+      <stop stop-color="#FFFDF8"/>
+      <stop offset="1" stop-color="#EFE5DF"/>
+    </radialGradient>
+  </defs>
+</svg>
