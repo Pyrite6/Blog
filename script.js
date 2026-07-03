@@ -52,6 +52,14 @@ function loadCategories() {
   );
 }
 
+function loadFragments() {
+  return loadDataScript(
+    "data/fragments.js",
+    "__BLOG_FRAGMENTS__",
+    (data) => Array.isArray(data)
+  );
+}
+
 function loadSharedHeader() {
   return new Promise((resolve, reject) => {
     const headerScript = document.createElement("script");
@@ -476,6 +484,146 @@ function mountHomeFilters(posts, categories) {
   refresh();
 }
 
+function getFragmentYear(fragment) {
+  const dateText = String(fragment.date || fragment.timeLabel || "");
+  const matchedYear = dateText.match(/\d{4}/);
+  return fragment.year || matchedYear?.[0] || "";
+}
+
+function getFragmentTimeLabel(fragment) {
+  if (fragment.timeLabel) {
+    return fragment.timeLabel;
+  }
+
+  const rawDate = String(fragment.date || "").trim();
+  if (!rawDate) {
+    return "";
+  }
+
+  const date = new Date(rawDate);
+  if (Number.isNaN(date.getTime())) {
+    return rawDate.replace("T", " ").replace(/\.\d+Z?$/, "");
+  }
+
+  const parts = new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+  const byType = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+
+  return `${byType.year}-${byType.month}-${byType.day} ${byType.hour}:${byType.minute}:${byType.second}`;
+}
+
+function normalizeFragmentParagraphs(fragment) {
+  if (Array.isArray(fragment.paragraphs)) {
+    return fragment.paragraphs.filter(Boolean);
+  }
+
+  if (Array.isArray(fragment.content)) {
+    return fragment.content.filter(Boolean);
+  }
+
+  if (fragment.content) {
+    return String(fragment.content)
+      .split(/\n{2,}/)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function resolveFragmentImagePath(fragment, image) {
+  const imageValue = typeof image === "string" ? image : image?.src || image?.path || "";
+  if (!imageValue) {
+    return "";
+  }
+
+  if (isSpecialUrl(imageValue) || /^(?:assets|data|posts|image)\//i.test(imageValue)) {
+    return resolveAssetPath(imageValue);
+  }
+
+  const year = image?.year || getFragmentYear(fragment);
+  return resolveAssetPath(imageValue, `image/Fragment/${year}`);
+}
+
+function renderFragmentImages(fragment) {
+  if (!Array.isArray(fragment.images) || fragment.images.length === 0) {
+    return "";
+  }
+
+  const images = fragment.images
+    .map((image) => {
+      const src = resolveFragmentImagePath(fragment, image);
+      if (!src) {
+        return "";
+      }
+
+      const alt =
+        typeof image === "string"
+          ? fragment.imageAlt || "碎片图片"
+          : image.alt || fragment.imageAlt || "碎片图片";
+      const caption = typeof image === "string" ? "" : image.caption || "";
+
+      return `
+        <figure class="fragment-image">
+          <img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" />
+          ${caption ? `<figcaption>${escapeHtml(caption)}</figcaption>` : ""}
+        </figure>
+      `;
+    })
+    .filter(Boolean)
+    .join("");
+
+  if (!images) {
+    return "";
+  }
+
+  return `<div class="fragment-images">${images}</div>`;
+}
+
+function renderFragments(fragments) {
+  const timeline = document.querySelector("[data-fragment-timeline]");
+  if (!timeline) {
+    return;
+  }
+
+  if (!Array.isArray(fragments) || fragments.length === 0) {
+    timeline.innerHTML = '<p class="empty-state">这里还没有碎片记录。</p>';
+    return;
+  }
+
+  const sortedFragments = [...fragments].sort((a, b) => {
+    const dateA = new Date(a.date || a.timeLabel || 0);
+    const dateB = new Date(b.date || b.timeLabel || 0);
+    return dateB - dateA;
+  });
+
+  timeline.innerHTML = sortedFragments
+    .map((fragment) => {
+      const paragraphs = normalizeFragmentParagraphs(fragment);
+      const text = paragraphs
+        .map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`)
+        .join("");
+
+      return `
+        <article class="fragment-entry">
+          <time class="fragment-time">${escapeHtml(getFragmentTimeLabel(fragment))}</time>
+          <div class="fragment-card">
+            ${text}
+            ${renderFragmentImages(fragment)}
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
 loadSharedHeader()
   .then(initSharedHeader)
   .catch((error) => {
@@ -494,5 +642,14 @@ if (root.dataset.page === "home") {
     })
     .catch((error) => {
       console.error(error);
+    });
+}
+
+if (root.dataset.page === "fragments") {
+  loadFragments()
+    .then(renderFragments)
+    .catch((error) => {
+      console.error(error);
+      renderFragments([]);
     });
 }
