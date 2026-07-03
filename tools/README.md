@@ -47,3 +47,36 @@ Those paths will automatically resolve to:
 image/default/blog-intro/cover.png
 image/default/blog-intro/gallery/step-1.jpg
 ```
+
+## Fragments
+
+Fragments live in:
+
+```text
+posts/fragments/fragments.md
+```
+
+Use level-2 date headings for each fragment:
+
+```md
+## 2026-06-01 17:54:24
+
+碎片正文第一段。
+
+碎片正文第二段。
+
+![图片说明](photo.jpg)
+```
+
+Fragment images are stored by year:
+
+```text
+image/Fragment/2026/photo.jpg
+```
+
+Running the build script writes:
+
+```text
+data/fragments.json
+data/fragments.js
+```

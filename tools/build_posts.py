@@ -9,11 +9,17 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 POSTS_DIR = ROOT / "posts"
+FRAGMENTS_DIR = POSTS_DIR / "fragments"
 DATA_DIR = ROOT / "data"
 ARTICLES_DIR = DATA_DIR / "articles"
 
 
 FRONT_MATTER_PATTERN = re.compile(r"^---\s*\n(.*?)\n---\s*\n?(.*)$", re.DOTALL)
+FRAGMENT_HEADING_PATTERN = re.compile(r"^##+\s+(.+?)\s*$")
+FRAGMENT_DATE_PATTERN = re.compile(
+    r"^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?$"
+)
+MARKDOWN_IMAGE_PATTERN = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
 
 
 def parse_scalar(raw: str):
@@ -191,6 +197,129 @@ def build_post_record(category_dir: Path, markdown_file: Path):
     return record
 
 
+def normalize_fragment_datetime(raw_value: str) -> dict[str, str]:
+    value = str(raw_value or "").strip()
+    match = FRAGMENT_DATE_PATTERN.match(value)
+
+    if not match:
+        matched_year = re.search(r"\d{4}", value)
+        return {
+            "date": value,
+            "timeLabel": value,
+            "year": matched_year.group(0) if matched_year else "",
+        }
+
+    year, month, day, hour, minute, second = match.groups()
+    hour = hour or "00"
+    minute = minute or "00"
+    second = second or "00"
+    time_label = f"{year}-{month}-{day} {hour}:{minute}:{second}"
+
+    return {
+        "date": f"{year}-{month}-{day}T{hour}:{minute}:{second}+08:00",
+        "timeLabel": time_label,
+        "year": year,
+    }
+
+
+def fragment_id_from_label(label: str, index: int) -> str:
+    normalized = re.sub(r"[^a-zA-Z0-9]+", "-", label).strip("-").lower()
+    return normalized or f"fragment-{index + 1}"
+
+
+def split_fragment_sections(body: str):
+    sections = []
+    current_label = None
+    current_lines = []
+
+    def flush_current():
+        if current_label is None:
+            return
+
+        sections.append((current_label, "\n".join(current_lines).strip()))
+
+    for line in body.splitlines():
+        match = FRAGMENT_HEADING_PATTERN.match(line.strip())
+        if match and FRAGMENT_DATE_PATTERN.match(match.group(1).strip()):
+            flush_current()
+            current_label = match.group(1).strip()
+            current_lines = []
+            continue
+
+        if current_label is not None:
+            current_lines.append(line)
+
+    flush_current()
+    return sections
+
+
+def parse_fragment_content(markdown: str):
+    paragraphs = []
+    images = []
+
+    for block in re.split(r"\n\s*\n", markdown):
+        block = block.strip()
+        if not block:
+            continue
+
+        for match in MARKDOWN_IMAGE_PATTERN.finditer(block):
+            alt = match.group(1).strip()
+            raw_src = match.group(2).strip()
+            src = raw_src.split(None, 1)[0].strip("<>")
+            image = {"src": src, "alt": alt or "碎片图片"}
+            if alt:
+                image["caption"] = alt
+            images.append(image)
+
+        text_block = MARKDOWN_IMAGE_PATTERN.sub("", block).strip()
+        if not text_block:
+            continue
+
+        paragraph = strip_markdown(text_block)
+        if paragraph:
+            paragraphs.append(paragraph)
+
+    return paragraphs, images
+
+
+def build_fragment_record(markdown_file: Path, label: str, content: str, index: int):
+    datetime_info = normalize_fragment_datetime(label)
+    paragraphs, images = parse_fragment_content(content)
+
+    return {
+        "id": fragment_id_from_label(label, index),
+        "date": datetime_info["date"],
+        "timeLabel": datetime_info["timeLabel"],
+        "year": datetime_info["year"],
+        "sourcePath": f"posts/fragments/{markdown_file.name}",
+        "paragraphs": paragraphs,
+        "images": images,
+    }
+
+
+def collect_fragments():
+    fragments = []
+
+    if not FRAGMENTS_DIR.exists():
+        return fragments
+
+    for markdown_file in sorted(FRAGMENTS_DIR.glob("*.md")):
+        raw_text = markdown_file.read_text(encoding="utf-8")
+        metadata, body = parse_front_matter(raw_text)
+        sections = split_fragment_sections(body)
+
+        if not sections and body.strip():
+            label = str(metadata.get("date") or metadata.get("timeLabel") or markdown_file.stem)
+            sections = [(label, body.strip())]
+
+        for label, content in sections:
+            fragments.append(
+                build_fragment_record(markdown_file, label, content, len(fragments))
+            )
+
+    return fragments
+
+
 def write_json(path: Path, payload) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -210,6 +339,9 @@ def collect_posts():
 
     for category_dir in sorted(POSTS_DIR.iterdir()):
         if not category_dir.is_dir():
+            continue
+
+        if category_dir == FRAGMENTS_DIR:
             continue
 
         for markdown_file in sorted(category_dir.glob("*.md")):
@@ -247,6 +379,7 @@ def build_categories(posts):
 
 def main():
     posts = collect_posts()
+    fragments = collect_fragments()
     categories = build_categories(posts)
 
     posts_index = [{key: value for key, value in post.items() if key != "content"} for post in posts]
@@ -259,6 +392,8 @@ def main():
     write_js(DATA_DIR / "posts.js", "__BLOG_POSTS__", posts_index)
     write_json(DATA_DIR / "categories.json", categories)
     write_js(DATA_DIR / "categories.js", "__BLOG_CATEGORIES__", categories)
+    write_json(DATA_DIR / "fragments.json", fragments)
+    write_js(DATA_DIR / "fragments.js", "__BLOG_FRAGMENTS__", fragments)
 
     for post in posts:
         folder = post["folder"]
@@ -268,7 +403,10 @@ def main():
         write_json(article_json_path, post)
         write_js(article_js_path, "__BLOG_ARTICLE__", post)
 
-    print(f"Built {len(posts)} posts across {len(categories)} categories.")
+    print(
+        f"Built {len(posts)} posts across {len(categories)} categories "
+        f"and {len(fragments)} fragments."
+    )
 
 
 if __name__ == "__main__":
