@@ -228,6 +228,7 @@ body[data-theme="dark"] .site-header {
   position: relative;
   display: flex;
   align-items: center;
+  margin-top: 18px;
   min-height: clamp(430px, 54vw, 620px);
   padding: clamp(64px, 9vw, 118px) clamp(24px, 6vw, 78px);
   overflow: hidden;
