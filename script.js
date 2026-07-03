@@ -624,6 +624,35 @@ function renderFragments(fragments) {
     .join("");
 }
 
+function getLatestFragment(fragments) {
+  if (!Array.isArray(fragments) || fragments.length === 0) {
+    return null;
+  }
+
+  return [...fragments].sort((a, b) => {
+    const dateA = new Date(a.date || a.timeLabel || 0);
+    const dateB = new Date(b.date || b.timeLabel || 0);
+    return dateB - dateA;
+  })[0];
+}
+
+function renderLatestFragment(fragments) {
+  const latestFragmentMount = document.querySelector("[data-latest-fragment]");
+  if (!latestFragmentMount) {
+    return;
+  }
+
+  const latestFragment = getLatestFragment(fragments);
+  const paragraphs = latestFragment ? normalizeFragmentParagraphs(latestFragment) : [];
+  if (paragraphs.length === 0) {
+    return;
+  }
+
+  latestFragmentMount.innerHTML = paragraphs
+    .map((paragraph) => `<p class="hero-text">${escapeHtml(paragraph)}</p>`)
+    .join("");
+}
+
 loadSharedHeader()
   .then(initSharedHeader)
   .catch((error) => {
@@ -640,6 +669,12 @@ if (root.dataset.page === "home") {
     .then(([posts, categories]) => {
       mountHomeFilters(posts, categories);
     })
+    .catch((error) => {
+      console.error(error);
+    });
+
+  loadFragments()
+    .then(renderLatestFragment)
     .catch((error) => {
       console.error(error);
     });
