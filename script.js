@@ -89,6 +89,8 @@ function loadSharedFooter() {
 function initSharedHeader() {
   const toggle = document.querySelector(".theme-toggle");
   const navLinks = document.querySelectorAll("[data-nav]");
+  const navToggle = document.querySelector(".nav-toggle");
+  const mainNav = document.querySelector(".main-nav");
 
   toggle?.addEventListener("click", () => {
     const isDark = root.dataset.theme === "dark";
@@ -101,6 +103,14 @@ function initSharedHeader() {
 
     root.dataset.theme = "dark";
     window.localStorage.setItem("blog-theme", "dark");
+  });
+
+  navToggle?.addEventListener("click", () => {
+    const isOpen = mainNav?.classList.toggle("is-open");
+    if (navToggle) {
+      navToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      navToggle.setAttribute("aria-label", isOpen ? "关闭菜单" : "菜单");
+    }
   });
 
   const currentPage =

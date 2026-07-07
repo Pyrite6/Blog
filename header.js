@@ -70,6 +70,18 @@
             <path d="M17.3 6.7 19.4 4.6"></path>
           </svg>
         </button>
+        <button
+          class="icon-button nav-toggle"
+          type="button"
+          aria-label="菜单"
+          aria-expanded="false"
+        >
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path class="nav-icon-bar" d="M3 6h18"></path>
+            <path class="nav-icon-bar" d="M3 12h18"></path>
+            <path class="nav-icon-bar" d="M3 18h18"></path>
+          </svg>
+        </button>
       </div>
     </header>
   `.trim();
