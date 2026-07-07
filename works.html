@@ -5,18 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>五六七 | 作品</title>
     <meta name="description" content="五六七的作品页面。" />
-    <link rel="stylesheet" href="styles.css?v=20260702" />
+    <link rel="stylesheet" href="styles.css?v=20260707" />
+    <link rel="stylesheet" href="works.css?v=20260707" />
   </head>
-  <body data-page="works">
+  <body data-page="works" class="loading">
     <div class="page-shell">
       <div data-shared-header></div>
 
-      <main class="blank-main" aria-label="作品页面">
+      <main aria-label="作品页面">
         <h1 class="visually-hidden">作品</h1>
-        <section class="blank-surface" aria-hidden="true"></section>
+        <section class="preview-wrap" data-preview-wrap></section>
+        <section class="content-wrap" data-content-wrap></section>
+        <button class="action--back" type="button" aria-label="返回">
+          <svg width="25px" height="25px" viewBox="0 0 25 25"><path d="M24 12.001H2.914l5.294-5.295-.707-.707L1 12.501l6.5 6.5.707-.707-5.293-5.293H24v-1z"/></svg>
+          <span>返回</span>
+        </button>
       </main>
     </div>
 
-    <script src="script.js?v=20260702"></script>
+    <script src="script.js?v=20260707"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/Flip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <script src="works.js?v=20260707"></script>
   </body>
 </html>
