@@ -1,0 +1,64 @@
+# 知识卡导出索引文件
+schema_version: 1
+locale: zh-CN
+branch: main
+nodes_managed: true
+exported_at: "2026-07-07T06:21:38Z"
+modules:
+    "":
+        dir_name: 个人博客站点（内容-构建-渲染三层）
+        title: 个人博客站点（内容-构建-渲染三层）
+        scope:
+            - .gitattributes
+            - README.md
+            - blog.ico
+        source_files: []
+        children:
+            - build_tools
+            - posts_content
+            - site_pages
+        depends_on: []
+        related_to: []
+    build_tools:
+        dir_name: 博客文章构建与增量监视工具
+        title: 博客文章构建与增量监视工具
+        scope:
+            - tools/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: posts_content
+    posts_content:
+        dir_name: 博客文章与碎片内容源数据
+        title: 博客文章与碎片内容源数据
+        scope:
+            - posts/
+            - data/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: build_tools
+            - path: site_pages
+    site_pages:
+        dir_name: 博客站点页面与客户端渲染层
+        title: 博客站点页面与客户端渲染层
+        scope:
+            - index.html
+            - about.html
+            - article.html
+            - fragments.html
+            - shelf.html
+            - works.html
+            - styles.css
+            - article.css
+            - script.js
+            - header.js
+            - footer.js
+            - article.js
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: posts_content

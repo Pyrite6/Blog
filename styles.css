@@ -1001,18 +1001,6 @@ body[data-theme="dark"] .fragment-image img {
     --content-width: min(1120px, calc(100vw - 48px));
   }
 
-  .site-header {
-    grid-template-columns: 1fr auto;
-    gap: 18px 24px;
-  }
-
-  .main-nav {
-    order: 3;
-    grid-column: 1 / -1;
-    justify-content: flex-start;
-    padding-top: 4px;
-  }
-
   .archive-layout {
     grid-template-columns: 1fr;
   }
@@ -1045,11 +1033,6 @@ body[data-theme="dark"] .fragment-image img {
 
   .brand-text {
     font-size: 1.45rem;
-  }
-
-  .main-nav {
-    gap: 22px;
-    flex-wrap: wrap;
   }
 
   .hero-section {

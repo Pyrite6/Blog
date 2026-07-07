@@ -1,0 +1,20 @@
+schema_version: 1
+module_path: site_pages
+title: 博客站点页面与客户端渲染层
+scope:
+    - index.html
+    - about.html
+    - article.html
+    - fragments.html
+    - shelf.html
+    - works.html
+    - styles.css
+    - article.css
+    - script.js
+    - header.js
+    - footer.js
+    - article.js
+source_files: []
+depends_on: []
+related_to:
+    - path: posts_content
