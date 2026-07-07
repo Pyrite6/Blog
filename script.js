@@ -723,7 +723,7 @@ if (root.dataset.page === "fragments") {
   }
 
   loadScript(
-    "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js",
+    "https://cdn.jsdelivr.net/npm/three@0.118.0/build/three.min.js",
     function () {
       loadScript(
         "https://cdn.jsdelivr.net/npm/dat.gui@0.7.7/build/dat.gui.min.js",
