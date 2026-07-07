@@ -1738,7 +1738,8 @@ var $Focm$var$webGL = new $Focm$var$WebGL({
   canvas: document.getElementById('canvas')
 });
 setTimeout(function () {
-  $Focm$var$webGL.start();
+  $Focm$var$webGL.shootingStar.start();
+  document.body.classList.add('o-start');
 }, $Focm$var$DELAY);
 return {
   "Focm": {}
