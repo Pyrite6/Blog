@@ -9,6 +9,18 @@ if (savedTheme === "dark") {
   root.dataset.theme = "dark";
 }
 
+// --- 流星鼠标指针特效：注入 canvas 及样式 ---
+(function () {
+  const canvas = document.createElement("canvas");
+  canvas.id = "canvas";
+  document.body.insertBefore(canvas, document.body.firstChild);
+
+  const style = document.createElement("style");
+  style.textContent =
+    "#canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;display:block}body.o-start #canvas{cursor:none}";
+  document.head.appendChild(style);
+})();
+
 function loadDataScript(relativePath, globalName, isValid) {
   const validator = isValid || (() => true);
   if (validator(window[globalName])) {
@@ -698,3 +710,27 @@ if (root.dataset.page === "fragments") {
       renderFragments([]);
     });
 }
+
+// --- 动态加载流星鼠标指针特效依赖 ---
+(function () {
+  var ssUrl = new URL("cursor/Shooting star.js", scriptUrl).href;
+
+  function loadScript(src, onLoad) {
+    var script = document.createElement("script");
+    script.src = src;
+    if (onLoad) script.onload = onLoad;
+    document.head.appendChild(script);
+  }
+
+  loadScript(
+    "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js",
+    function () {
+      loadScript(
+        "https://cdn.jsdelivr.net/npm/dat.gui@0.7.7/build/dat.gui.min.js",
+        function () {
+          loadScript(ssUrl);
+        }
+      );
+    }
+  );
+})();
