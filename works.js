@@ -11,7 +11,7 @@
   var FLIP_EASING = "cubic-bezier(0.65, 0, 0.35, 1)";
   var TEXT_DURATION = 500;          // ms — text fade/slide
   var TEXT_DELAY = 150;             // ms — stagger after flip starts
-  var PARALLAX_SCALE = 0.8;         // max extra scaleY (1 → 1.8)
+  var PARALLAX_SCALE = 0;          // disabled — no zoom cropping
 
   /* ---- DOM refs ---- */
   var previewWrap = document.querySelector("[data-preview-wrap]");
@@ -111,12 +111,12 @@
             '<div class="preview__img">' +
               '<div class="preview__img-inner" style="background-image:url(' + escapeHtml(cover) + ')"></div>' +
             '</div>' +
-          '</div>' +
-          '<div class="preview__title">' +
-            '<h2 class="preview__title-main">' +
-              '<span class="oh"><span class="oh__inner">' + escapeHtml(w.title) + '</span></span>' +
-            '</h2>' +
-            '<p class="preview__desc">' + escapeHtml(w.excerpt || w.summary || "") + '</p>' +
+            '<div class="preview__title">' +
+              '<h2 class="preview__title-main">' +
+                '<span class="oh"><span class="oh__inner">' + escapeHtml(w.title) + '</span></span>' +
+              '</h2>' +
+              '<p class="preview__desc">' + escapeHtml(w.excerpt || w.summary || "") + '</p>' +
+            '</div>' +
           '</div>' +
         '</div>'
       );
@@ -201,7 +201,7 @@
       var t = Math.max(0, Math.min(1, progress));
 
       item.DOM.imageInner.style.transform = "scaleY(" + (1 + t * PARALLAX_SCALE).toFixed(4) + ")";
-      item.DOM.title.style.transform = "translateY(" + (-t * 100).toFixed(2) + "%)";
+      // title is now overlaid on image — no separate parallax needed
     }
     scrollTicking = false;
   }
