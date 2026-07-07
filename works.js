@@ -1,41 +1,41 @@
 /* ============================================
    Works Page — Image to Content transition
+   Pure vanilla JS — no GSAP / Lenis dependency
    ============================================ */
 (function () {
   var BlogShared = window.BlogShared;
-  var gsap = window.gsap;
-  var ScrollTrigger = window.ScrollTrigger;
-  var Flip = window.Flip;
-  var Lenis = window.Lenis;
+  if (!BlogShared) return;
 
-  if (!BlogShared || !gsap || !ScrollTrigger || !Flip) return;
+  /* ---- constants ---- */
+  var FLIP_DURATION = 800;          // ms — flip animation
+  var FLIP_EASING = "cubic-bezier(0.65, 0, 0.35, 1)";
+  var TEXT_DURATION = 500;          // ms — text fade/slide
+  var TEXT_DELAY = 150;             // ms — stagger after flip starts
+  var PARALLAX_SCALE = 0.8;         // max extra scaleY (1 → 1.8)
 
-  gsap.registerPlugin(ScrollTrigger);
-  gsap.registerPlugin(Flip);
-
-  var ANIM = { duration: 1.2, ease: "power4.inOut" };
-
+  /* ---- DOM refs ---- */
   var previewWrap = document.querySelector("[data-preview-wrap]");
   var contentWrap = document.querySelector("[data-content-wrap]");
   var backCtrl = document.querySelector(".action--back");
+  if (!previewWrap || !contentWrap || !backCtrl) return;
 
-  var previewItems = [];
-  var currentItem = -1;
+  /* ---- state ---- */
+  var previewItems = [];            // PreviewItem[]
+  var currentItem = -1;             // index of open item
   var isAnimating = false;
-  var lenis;
+  var flyingImage = null;           // clone element during flip
+  var scrollTicking = false;
 
-  /* ---- placeholder images for padding ---- */
+  /* ---- placeholder images ---- */
   var PLACEHOLDER_IMAGES = [
-    "assets/1.jpg",
-    "assets/2.jpg",
-    "assets/3.jpg",
-    "assets/4.jpg",
-    "assets/5.jpg",
-    "assets/6.jpg",
-    "assets/7.jpg"
+    "assets/1.jpg", "assets/2.jpg", "assets/3.jpg",
+    "assets/4.jpg", "assets/5.jpg", "assets/6.jpg", "assets/7.jpg"
   ];
 
-  /* ---- helpers ---- */
+  /* ================================================================
+     Helpers
+     ================================================================ */
+
   function escapeHtml(str) {
     return BlogShared.escapeHtml
       ? BlogShared.escapeHtml(str)
@@ -48,12 +48,26 @@
     return post.cover;
   }
 
-  function isInViewport(el) {
-    var rect = el.getBoundingClientRect();
-    return rect.bottom > 0 && rect.top < window.innerHeight;
+  /* transition-end helper with timeout fallback */
+  function onTransitionEnd(el, callback) {
+    var called = false;
+    function handler(e) {
+      if (e.target !== el) return;
+      if (called) return;
+      called = true;
+      el.removeEventListener("transitionend", handler);
+      callback();
+    }
+    el.addEventListener("transitionend", handler);
+    setTimeout(function () {
+      if (!called) { called = true; el.removeEventListener("transitionend", handler); callback(); }
+    }, FLIP_DURATION + 120);
   }
 
-  /* ---- data loading ---- */
+  /* ================================================================
+     Data loading
+     ================================================================ */
+
   function loadWorksData() {
     return BlogShared.loadDataScript("data/posts.js", "__BLOG_POSTS__", function (d) {
       return Array.isArray(d);
@@ -84,96 +98,73 @@
     return padded;
   }
 
-  /* ---- build DOM ---- */
+  /* ================================================================
+     DOM building
+     ================================================================ */
+
   function buildPreviews(works) {
-    previewWrap.innerHTML = works
-      .map(function (w, i) {
-        var cover = resolveCover(w);
-        return (
-          '<div class="preview" data-index="' +
-          i +
-          '">' +
+    previewWrap.innerHTML = works.map(function (w, i) {
+      var cover = resolveCover(w);
+      return (
+        '<div class="preview" data-index="' + i + '">' +
           '<div class="preview__img-wrap">' +
-          '<div class="preview__img">' +
-          '<div class="preview__img-inner" style="background-image:url(' +
-          escapeHtml(cover) +
-          ')"></div>' +
-          "</div>" +
-          "</div>" +
+            '<div class="preview__img">' +
+              '<div class="preview__img-inner" style="background-image:url(' + escapeHtml(cover) + ')"></div>' +
+            '</div>' +
+          '</div>' +
           '<div class="preview__title">' +
-          '<h2 class="preview__title-main">' +
-          '<span class="oh"><span class="oh__inner">' +
-          escapeHtml(w.title) +
-          "</span></span>" +
-          "</h2>" +
-          '<p class="preview__desc">' +
-          escapeHtml(w.excerpt || w.summary || "") +
-          "</p>" +
-          "</div>" +
-          "</div>"
-        );
-      })
-      .join("");
+            '<h2 class="preview__title-main">' +
+              '<span class="oh"><span class="oh__inner">' + escapeHtml(w.title) + '</span></span>' +
+            '</h2>' +
+            '<p class="preview__desc">' + escapeHtml(w.excerpt || w.summary || "") + '</p>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join("");
   }
 
   function buildContents(works) {
-    contentWrap.innerHTML = works
-      .map(function (w, i) {
-        var cover = resolveCover(w);
-        var tagsHtml = "";
-        if (w.tags && w.tags.length) {
-          tagsHtml =
-            '<div class="content__meta oh"><span class="oh__inner">' +
-            w.tags.map(function (t) { return escapeHtml(t); }).join("  ·  ") +
-            "</span></div>";
-        }
-        var linkHtml = "";
-        if (w.path && !w.isPlaceholder) {
-          linkHtml =
-            '<a class="content__link" href="' +
-            escapeHtml(w.path) +
-            '">查看详情</a>';
-        }
-        var thumbsHtml = "";
-        if (!w.isPlaceholder && w.imageDir) {
-          thumbsHtml =
-            '<div class="content__thumbs">' +
-            [1, 2, 3, 4]
-              .map(function () {
-                return '<div class="content__thumbs-item"></div>';
-              })
-              .join("") +
-            "</div>";
-        }
-        return (
-          '<div class="content" data-index="' +
-          i +
-          '">' +
+    contentWrap.innerHTML = works.map(function (w, i) {
+      var cover = resolveCover(w);
+      var tagsHtml = "";
+      if (w.tags && w.tags.length) {
+        tagsHtml = '<div class="content__meta oh"><span class="oh__inner">' +
+          w.tags.map(function (t) { return escapeHtml(t); }).join("  ·  ") +
+          '</span></div>';
+      }
+      var linkHtml = "";
+      if (w.path && !w.isPlaceholder) {
+        linkHtml = '<a class="content__link" href="' + escapeHtml(w.path) + '">查看详情</a>';
+      }
+      var thumbsHtml = "";
+      if (!w.isPlaceholder && w.imageDir) {
+        thumbsHtml = '<div class="content__thumbs">' +
+          [1, 2, 3, 4].map(function () { return '<div class="content__thumbs-item"></div>'; }).join("") +
+          '</div>';
+      }
+      return (
+        '<div class="content" data-index="' + i + '">' +
           '<div class="content__img">' +
-          '<div class="preview__img-inner" style="background-image:url(' +
-          escapeHtml(cover) +
-          ')"></div>' +
-          "</div>" +
+            '<div class="preview__img-inner" style="background-image:url(' + escapeHtml(cover) + ')"></div>' +
+          '</div>' +
           '<div class="content__group">' +
-          '<div class="content__title">' +
-          '<span class="oh"><span class="oh__inner">' +
-          escapeHtml(w.title) +
-          "</span></span>" +
-          "</div>" +
-          tagsHtml +
-          '<div class="content__text">' +
-          escapeHtml(w.excerpt || w.summary || "") +
-          "</div>" +
-          linkHtml +
-          "</div>" +
+            '<div class="content__title">' +
+              '<span class="oh"><span class="oh__inner">' + escapeHtml(w.title) + '</span></span>' +
+            '</div>' +
+            tagsHtml +
+            '<div class="content__text">' + escapeHtml(w.excerpt || w.summary || "") + '</div>' +
+            linkHtml +
+          '</div>' +
           thumbsHtml +
-          "</div>"
-        );
-      })
-      .join("");
+        '</div>'
+      );
+    }).join("");
   }
 
-  /* ---- PreviewItem ---- */
+  /* ================================================================
+     PreviewItem
+     ================================================================ */
+
   function PreviewItem(el, contentEl, index) {
     this.DOM = {
       el: el,
@@ -187,265 +178,341 @@
     this.content = {
       DOM: {
         el: contentEl,
-        titleInner: contentEl.querySelector(".oh__inner"),
+        titleInner: contentEl.querySelector(".content__title .oh__inner"),
         metaInner: contentEl.querySelector(".content__meta .oh__inner"),
         text: contentEl.querySelector(".content__text"),
-        thumbs: contentEl.querySelector(".content__thumbs"),
-        thumbsItems: contentEl.querySelectorAll(".content__thumbs-item")
+        thumbs: contentEl.querySelector(".content__thumbs")
       }
     };
     this.index = index;
-    this.imageInnerScaleYCached = 1;
-    this.scrollTimeline = null;
   }
 
-  /* ---- Scroll animations ---- */
-  function animateOnScroll() {
-    previewItems.forEach(function (item) {
-      gsap.set(item.DOM.imageInner, { transformOrigin: "50% 0%" });
-      item.scrollTimeline = gsap
-        .timeline({
-          scrollTrigger: {
-            trigger: item.DOM.el,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true
-          }
-        })
-        .addLabel("start", 0)
-        .to(item.DOM.title, { ease: "none", yPercent: -100 }, "start")
-        .to(item.DOM.imageInner, { ease: "none", scaleY: 1.8 }, "start");
-    });
-  }
+  /* ================================================================
+     Parallax on scroll (replaces ScrollTrigger)
+     ================================================================ */
 
-  /* ---- get adjacent visible items ---- */
-  function getAdjacentItems(item) {
-    var arr = [];
-    previewItems.forEach(function (other, pos) {
-      if (other !== item && isInViewport(other.DOM.el)) {
-        arr.push({ position: pos, item: other });
-      }
-    });
-    return arr;
-  }
+  function updateParallax() {
+    for (var i = 0; i < previewItems.length; i++) {
+      var item = previewItems[i];
+      var rect = item.DOM.el.getBoundingClientRect();
+      var wh = window.innerHeight;
+      // progress: 0 when top enters viewport bottom, 1 when bottom leaves viewport top
+      var progress = (wh - rect.top) / (wh + rect.height);
+      var t = Math.max(0, Math.min(1, progress));
 
-  /* ---- show content (Flip expand) ---- */
-  function showContent(item) {
-    var itemIndex = previewItems.indexOf(item);
-    var adjacent = getAdjacentItems(item);
-    item.adjacentItems = adjacent;
-
-    var imageInnerEl = item.DOM.imageInner;
-    var contentImgInner = item.content.DOM.el.querySelector(".preview__img-inner");
-
-    var tl = gsap.timeline({
-      defaults: ANIM,
-      onStart: function () {
-        lenis.stop();
-        document.body.classList.add("content-open");
-        item.content.DOM.el.classList.add("content--current");
-
-        gsap.set(
-          [
-            item.content.DOM.titleInner,
-            item.content.DOM.metaInner
-          ].filter(Boolean),
-          { yPercent: -101, opacity: 0 }
-        );
-
-        if (item.content.DOM.thumbs) {
-          gsap.set(item.content.DOM.thumbs, {
-            transformOrigin: "0% 0%",
-            scale: 0,
-            yPercent: 150
-          });
-        }
-
-        gsap.set(
-          [item.content.DOM.text, backCtrl].filter(Boolean),
-          { opacity: 0 }
-        );
-
-        try {
-          var rect = imageInnerEl.getBoundingClientRect();
-          item.imageInnerScaleYCached =
-            rect.height / imageInnerEl.offsetHeight || 1;
-        } catch (e) {
-          item.imageInnerScaleYCached = 1;
-        }
-      },
-      onComplete: function () {
-        isAnimating = false;
-      }
-    }).addLabel("start", 0);
-
-    // hide adjacent items
-    adjacent.forEach(function (adj) {
-      var dir = adj.position < itemIndex ? -window.innerHeight : window.innerHeight;
-      tl.to(adj.item.DOM.el, { y: dir }, "start");
-    });
-
-    // Flip: move image from preview to content
-    tl.add(function () {
-      var flipState = Flip.getState(item.DOM.image);
-      item.content.DOM.el
-        .querySelector(".content__img")
-        .appendChild(item.DOM.image);
-      Flip.from(flipState, {
-        duration: ANIM.duration,
-        ease: ANIM.ease,
-        absolute: true
-      });
-    }, "start");
-
-    // hide preview title
-    tl.to(item.DOM.titleInner, { yPercent: 101, opacity: 0, stagger: -0.03 }, "start");
-    // hide preview desc
-    tl.to(item.DOM.description, { yPercent: 101, opacity: 0 }, "start");
-    // reset image scale
-    tl.to(imageInnerEl, { scaleY: 1 }, "start");
-
-    // content elements come in
-    tl.addLabel("content", 0.15);
-    tl.to(backCtrl, { opacity: 1 }, "content");
-    if (item.content.DOM.titleInner) {
-      tl.to(item.content.DOM.titleInner, { yPercent: 0, opacity: 1, stagger: -0.05 }, "content");
+      item.DOM.imageInner.style.transform = "scaleY(" + (1 + t * PARALLAX_SCALE).toFixed(4) + ")";
+      item.DOM.title.style.transform = "translateY(" + (-t * 100).toFixed(2) + "%)";
     }
-    if (item.content.DOM.metaInner) {
-      tl.to(item.content.DOM.metaInner, { yPercent: 0, opacity: 1 }, "content");
+    scrollTicking = false;
+  }
+
+  function onScroll() {
+    if (!scrollTicking) {
+      requestAnimationFrame(updateParallax);
+      scrollTicking = true;
+    }
+  }
+
+  /* ================================================================
+     Flip: Expand (card → detail)
+     ================================================================ */
+
+  function showContent(item) {
+    if (isAnimating) return;
+    isAnimating = true;
+    currentItem = previewItems.indexOf(item);
+
+    /* capture source rect (visible image-wrap area) */
+    var sourceWrap = item.DOM.imageWrap;
+    var sourceRect = sourceWrap.getBoundingClientRect();
+    var bgImage = item.DOM.imageInner.style.backgroundImage;
+
+    /* create flying clone */
+    var clone = document.createElement("div");
+    clone.className = "fly-image";
+    clone.style.left   = sourceRect.left + "px";
+    clone.style.top    = sourceRect.top + "px";
+    clone.style.width  = sourceRect.width + "px";
+    clone.style.height = sourceRect.height + "px";
+    clone.style.backgroundImage = bgImage;
+    document.body.appendChild(clone);
+    flyingImage = clone;
+
+    /* hide grid image */
+    item.DOM.image.style.opacity = "0";
+
+    /* show overlay */
+    document.body.classList.add("content-open");
+    item.content.DOM.el.classList.add("content--current");
+
+    /* hide content image initially (will be revealed after flip) */
+    var contentImgInner = item.content.DOM.el.querySelector(".preview__img-inner");
+    if (contentImgInner) contentImgInner.style.opacity = "0";
+
+    /* set content text initial hidden states */
+    setContentTextHidden(item, true);
+
+    /* force layout, then read target rect */
+    clone.offsetHeight;
+    var targetEl = item.content.DOM.el.querySelector(".content__img");
+    var targetRect = targetEl.getBoundingClientRect();
+
+    /* animate clone from source → target */
+    clone.style.transition = "left " + FLIP_DURATION + "ms " + FLIP_EASING +
+      ", top " + FLIP_DURATION + "ms " + FLIP_EASING +
+      ", width " + FLIP_DURATION + "ms " + FLIP_EASING +
+      ", height " + FLIP_DURATION + "ms " + FLIP_EASING;
+    clone.style.left   = targetRect.left + "px";
+    clone.style.top    = targetRect.top + "px";
+    clone.style.width  = targetRect.width + "px";
+    clone.style.height = targetRect.height + "px";
+
+    /* hide adjacent cards */
+    hideAdjacent(item, true);
+
+    /* hide preview title / desc */
+    item.DOM.titleInner.style.opacity = "0";
+    item.DOM.titleInner.style.transform = "translateY(101%)";
+    if (item.DOM.description) {
+      item.DOM.description.style.opacity = "0";
+      item.DOM.description.style.transform = "translateY(101%)";
+    }
+
+    /* show back button */
+    backCtrl.style.transition = "opacity 300ms ease";
+    backCtrl.style.opacity = "1";
+
+    /* stagger content text reveal */
+    setTimeout(function () {
+      revealContentText(item);
+    }, TEXT_DELAY);
+
+    /* cleanup on transition end */
+    onTransitionEnd(clone, function () {
+      if (flyingImage === clone) {
+        clone.remove();
+        flyingImage = null;
+      }
+      if (contentImgInner) contentImgInner.style.opacity = "1";
+      isAnimating = false;
+    });
+  }
+
+  /* ================================================================
+     Flip: Collapse (detail → card)
+     ================================================================ */
+
+  function hideContent() {
+    if (isAnimating || currentItem < 0) return;
+    isAnimating = true;
+
+    var item = previewItems[currentItem];
+    var contentEl = item.content.DOM.el;
+
+    /* hide content image */
+    var contentImgInner = contentEl.querySelector(".preview__img-inner");
+    if (contentImgInner) contentImgInner.style.opacity = "0";
+
+    /* capture source rect (content image area) */
+    var contentImg = contentEl.querySelector(".content__img");
+    var sourceRect = contentImg.getBoundingClientRect();
+    var bgImage = item.DOM.imageInner.style.backgroundImage;
+
+    /* create flying clone at content position */
+    var clone = document.createElement("div");
+    clone.className = "fly-image";
+    clone.style.left   = sourceRect.left + "px";
+    clone.style.top    = sourceRect.top + "px";
+    clone.style.width  = sourceRect.width + "px";
+    clone.style.height = sourceRect.height + "px";
+    clone.style.backgroundImage = bgImage;
+    document.body.appendChild(clone);
+    flyingImage = clone;
+
+    /* hide overlay content */
+    contentEl.classList.remove("content--current");
+    backCtrl.style.opacity = "0";
+
+    /* hide content text */
+    setContentTextHidden(item, false);
+
+    /* restore adjacent cards */
+    hideAdjacent(item, false);
+
+    /* reveal preview title / desc */
+    item.DOM.titleInner.style.opacity = "1";
+    item.DOM.titleInner.style.transform = "translateY(0)";
+    if (item.DOM.description) {
+      item.DOM.description.style.opacity = "1";
+      item.DOM.description.style.transform = "translateY(0)";
+    }
+
+    /* force layout, read target rect */
+    clone.offsetHeight;
+    var targetWrap = item.DOM.imageWrap;
+    var targetRect = targetWrap.getBoundingClientRect();
+
+    /* animate clone from content → grid */
+    clone.style.transition = "left " + FLIP_DURATION + "ms " + FLIP_EASING +
+      ", top " + FLIP_DURATION + "ms " + FLIP_EASING +
+      ", width " + FLIP_DURATION + "ms " + FLIP_EASING +
+      ", height " + FLIP_DURATION + "ms " + FLIP_EASING;
+    clone.style.left   = targetRect.left + "px";
+    clone.style.top    = targetRect.top + "px";
+    clone.style.width  = targetRect.width + "px";
+    clone.style.height = targetRect.height + "px";
+
+    onTransitionEnd(clone, function () {
+      if (flyingImage === clone) {
+        clone.remove();
+        flyingImage = null;
+      }
+      item.DOM.image.style.opacity = "1";
+      document.body.classList.remove("content-open");
+      isAnimating = false;
+
+      /* trigger one parallax update to fix positions */
+      updateParallax();
+    });
+  }
+
+  /* ================================================================
+     Content text animation helpers
+     ================================================================ */
+
+  function setContentTextHidden(item, isExpand) {
+    var els = [
+      item.content.DOM.titleInner,
+      item.content.DOM.metaInner
+    ];
+    for (var i = 0; i < els.length; i++) {
+      if (els[i]) {
+        els[i].style.transition = "none";
+        els[i].style.opacity = "0";
+        els[i].style.transform = "translateY(" + (isExpand ? "30px" : "-30px") + ")";
+      }
+    }
+    if (item.content.DOM.text) {
+      item.content.DOM.text.style.transition = "none";
+      item.content.DOM.text.style.opacity = "0";
     }
     if (item.content.DOM.thumbs) {
-      tl.to(item.content.DOM.thumbs, { scale: 1, yPercent: 0, stagger: -0.05 }, "content");
+      item.content.DOM.thumbs.style.transition = "none";
+      item.content.DOM.thumbs.style.opacity = "0";
+      item.content.DOM.thumbs.style.transform = "translateY(30px)";
     }
-    tl.to(item.content.DOM.text, { opacity: 1 }, "content");
   }
 
-  /* ---- hide content (Flip collapse) ---- */
-  function hideContent() {
-    var item = previewItems[currentItem];
-    if (!item) {
-      isAnimating = false;
-      return;
+  function revealContentText(item) {
+    var els = [
+      item.content.DOM.titleInner,
+      item.content.DOM.metaInner
+    ];
+    for (var i = 0; i < els.length; i++) {
+      if (els[i]) {
+        els[i].style.transition = "opacity " + TEXT_DURATION + "ms ease, transform " + TEXT_DURATION + "ms ease";
+        els[i].style.opacity = "1";
+        els[i].style.transform = "translateY(0)";
+      }
     }
-
-    var imageInnerEl = item.DOM.imageInner;
-
-    gsap
-      .timeline({
-        defaults: ANIM,
-        onComplete: function () {
-          lenis.start();
-          document.body.classList.remove("content-open");
-          item.content.DOM.el.classList.remove("content--current");
-          isAnimating = false;
-        }
-      })
-      .addLabel("start", 0)
-      // hide back button
-      .to(backCtrl, { opacity: 0 }, "start")
-      // hide content title
-      .to(
-        item.content.DOM.titleInner,
-        { yPercent: -101, opacity: 0, stagger: 0.05 },
-        "start"
-      )
-      // hide content meta
-      .to(
-        item.content.DOM.metaInner,
-        { yPercent: -101, opacity: 0 },
-        "start"
-      )
-      // hide content thumbs
-      .to(
-        item.content.DOM.thumbs,
-        { scale: 0, yPercent: 150, stagger: -0.05 },
-        "start"
-      )
-      // hide content text
-      .to(item.content.DOM.text, { opacity: 0 }, "start")
-      // preview elements come in
-      .addLabel("preview", 0.15)
-      // show adjacent items
-      .to(
-        item.adjacentItems.map(function (a) { return a.item.DOM.el; }),
-        { y: 0 },
-        "preview"
-      )
-      // Flip: move image back to preview
-      .add(function () {
-        var flipState = Flip.getState(item.DOM.image);
-        item.DOM.imageWrap.appendChild(item.DOM.image);
-        Flip.from(flipState, {
-          duration: ANIM.duration,
-          ease: ANIM.ease,
-          absolute: true
-        });
-      }, "preview")
-      // show preview title
-      .to(item.DOM.titleInner, { yPercent: 0, opacity: 1, stagger: 0.03 }, "preview")
-      // show preview desc
-      .to(item.DOM.description, { yPercent: 0, opacity: 1 }, "preview")
-      // restore image scale
-      .to(imageInnerEl, { scaleY: item.imageInnerScaleYCached }, "preview");
+    if (item.content.DOM.text) {
+      item.content.DOM.text.style.transition = "opacity " + TEXT_DURATION + "ms ease";
+      item.content.DOM.text.style.opacity = "1";
+    }
+    if (item.content.DOM.thumbs) {
+      item.content.DOM.thumbs.style.transition = "opacity " + TEXT_DURATION + "ms ease, transform " + TEXT_DURATION + "ms ease";
+      item.content.DOM.thumbs.style.opacity = "1";
+      item.content.DOM.thumbs.style.transform = "translateY(0)";
+    }
   }
 
-  /* ---- events ---- */
+  /* ================================================================
+     Adjacent cards — slide off/on screen
+     ================================================================ */
+
+  function hideAdjacent(item, hide) {
+    var itemIndex = previewItems.indexOf(item);
+    for (var i = 0; i < previewItems.length; i++) {
+      var other = previewItems[i];
+      if (other === item) continue;
+      var rect = other.DOM.el.getBoundingClientRect();
+      var inView = rect.bottom > 0 && rect.top < window.innerHeight;
+      if (!inView && !hide) {
+        // When restoring, only touch cards that were previously moved.
+        // Simplification: restore all.
+      }
+      if (hide) {
+        var dir = i < itemIndex ? -window.innerHeight : window.innerHeight;
+        other.DOM.el.style.transition = "transform " + FLIP_DURATION + "ms " + FLIP_EASING;
+        other.DOM.el.style.transform = "translateY(" + dir + "px)";
+      } else {
+        other.DOM.el.style.transition = "transform " + FLIP_DURATION + "ms " + FLIP_EASING;
+        other.DOM.el.style.transform = "translateY(0)";
+      }
+    }
+  }
+
+  /* ================================================================
+     Events
+     ================================================================ */
+
   function initEvents() {
-    previewItems.forEach(function (item, pos) {
-      item.DOM.imageWrap.addEventListener("click", function () {
-        if (isAnimating) return;
-        isAnimating = true;
-        currentItem = pos;
-        showContent(item);
-      });
+    /* click card → expand */
+    previewWrap.addEventListener("click", function (e) {
+      if (isAnimating) return;
+      var card = e.target.closest(".preview");
+      if (!card) return;
+      var idx = parseInt(card.getAttribute("data-index"), 10);
+      if (isNaN(idx) || idx < 0 || idx >= previewItems.length) return;
+      showContent(previewItems[idx]);
     });
 
+    /* back button → collapse */
     backCtrl.addEventListener("click", function () {
       if (isAnimating) return;
-      isAnimating = true;
       hideContent();
     });
-  }
 
-  /* ---- smooth scroll ---- */
-  function initSmoothScroll() {
-    lenis = new Lenis({
-      lerp: 0.1,
-      smooth: true,
-      direction: "vertical"
+    /* ESC key → collapse */
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && currentItem >= 0 && !isAnimating) {
+        hideContent();
+      }
     });
-
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
   }
 
-  /* ---- init ---- */
-  function init(works) {
+  /* ================================================================
+     Init
+     ================================================================ */
+
+  function init() {
     previewItems = [];
     var previewEls = document.querySelectorAll(".preview");
     var contentEls = document.querySelectorAll(".content");
 
-    previewEls.forEach(function (el, i) {
-      previewItems.push(new PreviewItem(el, contentEls[i], i));
-    });
+    for (var i = 0; i < previewEls.length; i++) {
+      previewItems.push(new PreviewItem(previewEls[i], contentEls[i], i));
+    }
 
     document.body.classList.remove("loading");
-    initSmoothScroll();
-    animateOnScroll();
+
+    /* start parallax loop */
+    window.addEventListener("scroll", onScroll, { passive: true });
+    updateParallax();
+
     initEvents();
   }
 
-  /* ---- bootstrap ---- */
+  /* ================================================================
+     Bootstrap
+     ================================================================ */
+
   loadWorksData()
     .then(function (works) {
       buildPreviews(works);
       buildContents(works);
-      // wait for DOM to settle, then init
       requestAnimationFrame(function () {
-        init(works);
+        init();
       });
     })
     .catch(function (err) {
