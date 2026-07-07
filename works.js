@@ -240,6 +240,7 @@
 
     /* hide grid image */
     item.DOM.image.style.opacity = "0";
+    item.DOM.imageWrap.style.background = "transparent";
 
     /* show overlay */
     document.body.classList.add("content-open");
@@ -368,6 +369,7 @@
         flyingImage = null;
       }
       item.DOM.image.style.opacity = "1";
+      item.DOM.imageWrap.style.background = "";
       document.body.classList.remove("content-open");
       isAnimating = false;
 

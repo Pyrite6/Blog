@@ -1,6 +1,6 @@
 schema_version: 1
 module_path: site_pages
-title: 博客站点页面与运行时渲染层
+title: 博客站点前端页面与运行时渲染层
 scope:
     - index.html
     - about.html

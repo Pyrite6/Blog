@@ -3,11 +3,11 @@ schema_version: 1
 locale: zh-CN
 branch: main
 nodes_managed: true
-exported_at: "2026-07-07T07:56:47Z"
+exported_at: "2026-07-07T08:26:37Z"
 modules:
     "":
-        dir_name: Markdown 博客站点（内容-构建-渲染）
-        title: Markdown 博客站点（内容-构建-渲染）
+        dir_name: 纯前端博客站点（Markdown → data.js → 浏览器渲染）
+        title: 纯前端博客站点（Markdown → data.js → 浏览器渲染）
         scope:
             - .gitattributes
             - README.md
@@ -41,8 +41,8 @@ modules:
         related_to:
             - path: build_tools
     site_pages:
-        dir_name: 博客站点页面与运行时渲染层
-        title: 博客站点页面与运行时渲染层
+        dir_name: 博客站点前端页面与运行时渲染层
+        title: 博客站点前端页面与运行时渲染层
         scope:
             - index.html
             - about.html

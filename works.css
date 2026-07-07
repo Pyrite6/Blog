@@ -30,7 +30,7 @@ body.loading .preview-wrap {
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-md);
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 16 / 9;
   background: var(--panel);
   box-shadow: var(--shadow);
 }
@@ -130,7 +130,7 @@ body.loading .preview-wrap {
 
 .content__img .preview__img-inner {
   width: 100%;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 16 / 9;
 }
 
 /* Content text area */
@@ -306,7 +306,7 @@ body.content-open .site-header {
   }
 
   .content__img .preview__img-inner {
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 16 / 9;
   }
 
   .content__title .oh__inner {
