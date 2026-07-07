@@ -1028,11 +1028,6 @@ body[data-theme="dark"] .fragment-image img {
   .site-header {
     position: static;
     margin-top: 12px;
-    padding-top: 18px;
-  }
-
-  .brand-text {
-    font-size: 1.45rem;
   }
 
   .hero-section {
@@ -1077,7 +1072,6 @@ body[data-theme="dark"] .fragment-image img {
   .site-header {
     grid-template-columns: 1fr auto;
     gap: 8px;
-    padding: 10px 12px;
   }
 
   .nav-toggle {
@@ -1120,10 +1114,6 @@ body[data-theme="dark"] .fragment-image img {
   .site-header {
     grid-template-columns: 1fr auto;
     border-radius: 16px;
-  }
-
-  .brand-text {
-    font-size: 0.92rem;
   }
 
   .header-actions,

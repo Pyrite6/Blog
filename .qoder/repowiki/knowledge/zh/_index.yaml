@@ -3,11 +3,11 @@ schema_version: 1
 locale: zh-CN
 branch: main
 nodes_managed: true
-exported_at: "2026-07-07T06:21:38Z"
+exported_at: "2026-07-07T06:27:22Z"
 modules:
     "":
-        dir_name: 个人博客站点（内容-构建-渲染三层）
-        title: 个人博客站点（内容-构建-渲染三层）
+        dir_name: 博客站点源码仓库
+        title: 博客站点源码仓库
         scope:
             - .gitattributes
             - README.md
@@ -40,10 +40,9 @@ modules:
         depends_on: []
         related_to:
             - path: build_tools
-            - path: site_pages
     site_pages:
-        dir_name: 博客站点页面与客户端渲染层
-        title: 博客站点页面与客户端渲染层
+        dir_name: 博客静态页面与运行时渲染层
+        title: 博客静态页面与运行时渲染层
         scope:
             - index.html
             - about.html
@@ -60,5 +59,4 @@ modules:
         source_files: []
         children: []
         depends_on: []
-        related_to:
-            - path: posts_content
+        related_to: []
