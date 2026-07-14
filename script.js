@@ -326,11 +326,12 @@ function renderPostGrid(posts) {
     .map(
       (post, index) => `
         <article class="post-card ${index === 0 ? "post-card-featured" : ""}">
-          <a class="post-thumb" href="${escapeHtml(post.path)}">
+          <a class="post-card-link" href="${escapeHtml(post.path)}" aria-label="阅读：${escapeHtml(post.title)}" tabindex="-1"></a>
+          <a class="post-thumb" href="${escapeHtml(post.path)}" tabindex="-1">
             <img src="${escapeHtml(resolvePostCoverPath(post))}" alt="${escapeHtml(post.title)}封面" />
           </a>
           <p class="post-category">${escapeHtml(post.category)}</p>
-          <h3><a href="${escapeHtml(post.path)}">${escapeHtml(post.title)}</a></h3>
+          <h3><a href="${escapeHtml(post.path)}" tabindex="-1">${escapeHtml(post.title)}</a></h3>
           <p class="post-excerpt">${escapeHtml(post.summary)}</p>
         </article>
       `
@@ -353,8 +354,9 @@ function renderArchive(posts, selectedTags) {
     .map(
       (post) => `
         <article class="archive-card ${post.featured ? "archive-card-featured" : ""}">
+          <a class="archive-card-link" href="${escapeHtml(post.path)}" aria-label="阅读：${escapeHtml(post.title)}" tabindex="-1"></a>
           <div class="archive-card-head">
-            <h3><a href="${escapeHtml(post.path)}">${escapeHtml(post.title)}</a></h3>
+            <h3><a href="${escapeHtml(post.path)}" tabindex="-1">${escapeHtml(post.title)}</a></h3>
             ${post.pinned ? '<span class="archive-mark">★</span>' : ""}
           </div>
           <div class="archive-meta">

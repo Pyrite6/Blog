@@ -238,9 +238,8 @@
     document.body.appendChild(clone);
     flyingImage = clone;
 
-    /* hide grid image */
-    item.DOM.image.style.opacity = "0";
-    item.DOM.imageWrap.style.background = "transparent";
+    /* hide grid card entirely (visibility:hidden keeps layout for getBoundingClientRect on flip-back) */
+    item.DOM.imageWrap.style.visibility = "hidden";
 
     /* show overlay */
     document.body.classList.add("content-open");
@@ -368,8 +367,7 @@
         clone.remove();
         flyingImage = null;
       }
-      item.DOM.image.style.opacity = "1";
-      item.DOM.imageWrap.style.background = "";
+      item.DOM.imageWrap.style.visibility = "";
       document.body.classList.remove("content-open");
       isAnimating = false;
 

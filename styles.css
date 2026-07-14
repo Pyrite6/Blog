@@ -369,6 +369,26 @@ body[data-theme="dark"] .site-header {
   position: relative;
 }
 
+/* stretched link — covers the whole card for easier clicking */
+.post-card-link,
+.archive-card-link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  text-decoration: none;
+}
+
+/* keep interactive elements above the overlay */
+.post-card .post-thumb,
+.post-card h3 a,
+.post-card .post-category,
+.archive-card .archive-card-head a,
+.archive-card .archive-tag,
+.archive-card .archive-mark {
+  position: relative;
+  z-index: 2;
+}
+
 .post-thumb {
   display: block;
   overflow: hidden;
